@@ -1,6 +1,6 @@
 const canvas = document.getElementById('can');
 const ctx = canvas.getContext('2d');
-const unit = 100;
+const unit = 10;
 
 //convenience class
 //works with anything that has {x,y}
@@ -22,9 +22,10 @@ class vec2{
     }
 }
 class PLANET{
-    constructor(Pos,Store){
+    constructor(Pos,Store,visual){
         this.position = Pos;
         this.storage = Store;
+		this.visualData  = visual;
         PLANET.planets.push(this);
     }
     static planets = [];
@@ -49,6 +50,10 @@ class SIGNAL{
     static sendSignal(Pos,Dir,Width,Density,Probe,Payload,Freq){
         for (let i = 0; i <= 2*Width; i+=2*Width/(Density-1))new SIGNAL(Pos,Dir-Width+i,Probe,Payload,Freq);
     }
+	static debugUpdate(){
+		ctx.clearRect(0,0,canvas.width, canvas.height);
+		SIGNAL.signals.forEach(signal=>{signal.update();signal.debugDrawPath()});
+	}
     debugDrawPath(){
         ctx.beginPath();
         ctx.translate(this.position.x,this.position.y);
@@ -62,17 +67,25 @@ class SIGNAL{
         let coll = PLANET.planets.find(p=>intersect(p,this));
         if(coll === undefined){
             //no collision
-            this.position = {x:this.position.x+unit*Math.cos(this.direction), y:this.position.y+unit*Math.sin(this.direction)};
+			ctx.strokeStyle = "black";
         }
         else{
            //collided with coll
-           SIGNAL.signals.splice(SIGNAL.signals.indexOf(this),1);
+			ctx.strokeStyle = "red";
+			if(this.isProbe){
+				SIGNAL.sendSignal(this.position, (this.direction+Math.PI)%(Math.PI*2), 0, 1, false, coll.visualData, this.frequency);
+			}
+			SIGNAL.signals[SIGNAL.signals.indexOf(this)] = SIGNAL.signals[SIGNAL.signals.length-1];
+			SIGNAL.signals.pop();
         }
+		this.position = {x:this.position.x+unit*Math.cos(this.direction), y:this.position.y+unit*Math.sin(this.direction)};
     }
 }
 
-let p = new PLANET({x:650,y:650,r:15},false);
-
+for(i = 0; i < 20; i++){
+	let p = new PLANET({x:Math.random()*800,y:Math.random()*800,r:Math.random()*9+1},false,"bichass");	
+}
+SIGNAL.sendSignal({x:400,y:400},0,Math.PI,360,true,"",100);
 
 
 function intersect(planet, signal){
@@ -107,16 +120,10 @@ window.onmousemove = (e)=>{
     mouseY = e.clientY;
 }
 
-/*setInterval(()=>{
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-    if(intersect(p,s)){
-        ctx.strokeStyle = "red";
-    }
-    else{
-        ctx.strokeStyle = "black";
-    }
-    s.debugDrawPath();
-    drawArc(p);
-    p.position.x = mouseX;
-    p.position.y = mouseY;
-},16);*/
+document.onkeydown=(e)=>{
+	SIGNAL.debugUpdate();
+	PLANET.planets.forEach(planet=>planet.debugDraw());
+}
+
+setInterval(()=>{
+},1000);
