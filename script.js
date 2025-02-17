@@ -47,18 +47,19 @@ class PLANET{
     }
 }
 class SIGNAL{
-    constructor(Pos,Dir,Probe,Payload,Freq){
+    constructor(Pos,Dir,Probe,Payload,Freq,origin){
         this.position=Pos;
         this.direction=Dir;
         this.isProbe=Probe;
         this.payload=Payload;
         this.frequency=Freq;
         this.strength=1;
+        this.origin=origin;
         SIGNAL.signals.push(this);
     }
     static signals=[];
-    static sendSignal(Pos,Dir,Width,Density,Probe,Payload,Freq){
-        for (let i = 0; i <= 2*Width; i+=2*Width/(Density-1))new SIGNAL(Pos,Dir-Width+i,Probe,Payload,Freq);
+    static sendSignal(Pos,Dir,Width,Density,Probe,Payload,Freq,Origin){
+        for (let i = 0; i <= 2*Width; i+=2*Width/(Density-1))new SIGNAL(Pos,Dir-Width+i,Probe,Payload,Freq,Origin);
     }
 	static debugStep(){
 		SIGNAL.signals.forEach(signal=>{signal.update();signal.debugDrawPath();});
@@ -79,9 +80,16 @@ class SIGNAL{
     update(){
         let collisionInfo = {};
         let coll = PLANET.planets.find(p=>intersect(p, this, collisionInfo));
-        if(coll === undefined){
+        if(coll === undefined || coll==this.origin || this.frequency/1600<=Math.random()){
             //no collision
 			ctx.strokeStyle = "black";
+            if((this.frequency/1600)<Math.random()){
+                this.strength-=Math.random()*0.009;
+            }
+            if(this.strength<=0){
+                SIGNAL.signals[SIGNAL.signals.indexOf(this)] = SIGNAL.signals[SIGNAL.signals.length-1];
+                SIGNAL.signals.pop();
+            }
         }
         else{
            //collided with coll
@@ -89,19 +97,20 @@ class SIGNAL{
 			if(this.isProbe){
                 let flipped = (this.direction + Math.PI)%(Math.PI*2);
                 let agneDiff = vec2.direction(collisionInfo.normal) - flipped;
-				SIGNAL.sendSignal(collisionInfo.position, (flipped + agneDiff*2)%(Math.PI*2), 0, 1, true, coll.visualData, this.frequency);
+				SIGNAL.sendSignal(collisionInfo.position, (flipped + agneDiff*2)%(Math.PI*2), 0, 1, false, `${coll.visualData}\nAt X=${coll.position.x} Y=${coll.position.y}\nSignal Strength=${Math.round(this.strength*10000)/100}%`, this.frequency, coll);
 			}
+            if(coll==SuperEarth) console.log(this.payload);
 			SIGNAL.signals[SIGNAL.signals.indexOf(this)] = SIGNAL.signals[SIGNAL.signals.length-1];
 			SIGNAL.signals.pop();
         }
 		this.position = {x:this.position.x+unit*Math.cos(this.direction), y:this.position.y+unit*Math.sin(this.direction)};
     }
 }
-
+let SuperEarth = new PLANET({x:400,y:400,r:15},false,'I am Super Earth');
 for(i = 0; i < 30; i++){
-	let p = new PLANET({x:Math.random()*800,y:Math.random()*800,r:Math.random()*10+5},false,"bichass");	
+	new PLANET({x:Math.random()*800,y:Math.random()*800,r:Math.random()*10+5},false,`I am planet #${i}`);
 }
-SIGNAL.sendSignal({x:400,y:400},0,Math.PI,10000,true,"",100);
+SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1600,true,"",100, SuperEarth);
 
 
 function intersect(planet, signal, dataTarget){
