@@ -68,6 +68,10 @@ class SIGNAL{
         ctx.clearRect(0,0,canvas.width, canvas.height);
         SIGNAL.debugStep();
     }
+    static debugNoise(payload,strength){
+        let full = payload.split('');
+        return full.map(x => (Math.random()>strength)?'█':x).reduce((x,y)=> x+y,'');
+    }
     debugDrawPath(){
         ctx.beginPath();
         ctx.translate(this.position.x,this.position.y);
@@ -80,7 +84,7 @@ class SIGNAL{
     update(){
         let collisionInfo = {};
         let coll = PLANET.planets.find(p=>intersect(p, this, collisionInfo));
-        if(coll === undefined || coll==this.origin || this.frequency/1600<=Math.random()){
+        if(coll === undefined || coll==this.origin || this.frequency/1600>=Math.random()){
             //no collision
 			ctx.strokeStyle = "black";
             if((this.frequency/1600)<Math.random()){
@@ -99,7 +103,7 @@ class SIGNAL{
                 let agneDiff = vec2.direction(collisionInfo.normal) - flipped;
 				SIGNAL.sendSignal(collisionInfo.position, (flipped + agneDiff*2)%(Math.PI*2), 0, 1, false, `${coll.visualData}\nAt X=${coll.position.x} Y=${coll.position.y}\nSignal Strength=${Math.round(this.strength*10000)/100}%`, this.frequency, coll);
 			}
-            if(coll==SuperEarth) console.log(this.payload);
+            if(coll==SuperEarth) console.log(SIGNAL.debugNoise(this.payload,this.strength));
 			SIGNAL.signals[SIGNAL.signals.indexOf(this)] = SIGNAL.signals[SIGNAL.signals.length-1];
 			SIGNAL.signals.pop();
         }
@@ -110,7 +114,7 @@ let SuperEarth = new PLANET({x:400,y:400,r:15},false,'I am Super Earth');
 for(i = 0; i < 30; i++){
 	new PLANET({x:Math.random()*800,y:Math.random()*800,r:Math.random()*10+5},false,`I am planet #${i}`);
 }
-SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1600,true,"",100, SuperEarth);
+SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",1100, SuperEarth);
 
 
 function intersect(planet, signal, dataTarget){
