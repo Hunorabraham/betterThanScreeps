@@ -1,6 +1,7 @@
 const canvas = document.getElementById('can');
 const ctx = canvas.getContext('2d');
 const unit = 1;
+const gravityCutoff = 100;
 
 //convenience class
 //works with anything that has {x,y}
@@ -98,7 +99,6 @@ class SIGNAL{
 		SIGNAL.signals.forEach(signal=>{signal.update();signal.debugDrawPath();});
 	}
     static debugUpdate(){
-        ctx.clearRect(0,0,canvas.width, canvas.height);
         SIGNAL.debugStep();
     }
     static debugNoise(payload,strength){
@@ -110,7 +110,7 @@ class SIGNAL{
         ctx.translate(this.position.x,this.position.y);
         ctx.moveTo(0,0);
         ctx.lineTo(unit*Math.cos(this.direction), unit*Math.sin(this.direction));
-        ctx.resetTransform();
+        ctx.translate(-this.position.x,-this.position.y);
         ctx.closePath();
         ctx.stroke();
     }
@@ -214,15 +214,34 @@ window.onmousemove = (e)=>{
     mouseY = e.clientY;
 }
 
-let a = new GRID(10,10,canvas.width,canvas.height);
-a.populateHashMap(PLANET.planets);
+let mainGrid = new GRID(10,10,gravityCutoff*10,gravityCutoff*10);
+mainGrid.populateHashMap(PLANET.planets);
+
+let canvasOffset = vec2.Zero();
 
 document.onkeydown=(e)=>{
+    switch(e.key.toLowerCase()){
+        case "arrowup":
+                canvasOffset.y += gravityCutoff;
+            return;
+        case "arrowdown":
+                canvasOffset.y -= gravityCutoff;
+            return;
+        case "arrowleft":
+                canvasOffset.x += gravityCutoff;
+            return;
+        case "arrowright":
+                canvasOffset.x -= gravityCutoff;
+            return;
+    }
     let inter = 0;
     let update = setInterval(()=>{
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.translate(canvasOffset.x,canvasOffset.y);
         SIGNAL.debugUpdate();
         PLANET.planets.forEach(planet=>planet.debugDraw());
-        a.debugDraw();
+        mainGrid.debugDraw();
+        ctx.resetTransform();
         inter++;
         if (inter>=50) clearInterval(update);
     },10);
