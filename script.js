@@ -2,6 +2,7 @@ const canvas = document.getElementById('can');
 const ctx = canvas.getContext('2d');
 const unit = 1;
 const gravityCutoff = 100;
+const maxFreq = 10000;
 
 //convenience class
 //works with anything that has {x,y}
@@ -98,7 +99,10 @@ class SIGNAL{
         for (let i = 0; i <= 2*Width; i+=2*Width/(Density-1))new SIGNAL(Pos,Dir-Width+i,Probe,Payload,Freq,Origin);
     }
 	static debugStep(){
-		SIGNAL.signals.forEach(signal=>{signal.update();signal.debugDrawPath();});
+		SIGNAL.signals.forEach(signal=>{
+            signal.update();
+            signal.debugDrawPath();
+        });
 	}
     static debugUpdate(){
         SIGNAL.debugStep();
@@ -133,12 +137,11 @@ class SIGNAL{
     update(){
         let collisionInfo = {};
         let coll = PLANET.planets.find(p=>intersect(p, this, collisionInfo));
-        if(coll === undefined || coll.id==this.origin || this.frequency/1600>=Math.random()){
+        if(coll === undefined || coll.id==this.origin || this.frequency/maxFreq>=Math.random()){
             //no collision
 			ctx.strokeStyle = "black";
-            if((this.frequency/1600)<Math.random()){
-                this.strength-=Math.random()*0.009;
-            }
+            this.strength-=Math.random()*(1-this.frequency/maxFreq)/50;
+            
             if(this.strength<=0){
                 SIGNAL.signals[SIGNAL.signals.indexOf(this)] = SIGNAL.signals[SIGNAL.signals.length-1];
                 SIGNAL.signals.pop();
@@ -150,7 +153,7 @@ class SIGNAL{
 			if(this.isProbe){
                 let flipped = (this.direction + Math.PI)%(Math.PI*2);
                 let agneDiff = vec2.direction(collisionInfo.normal) - flipped;
-				SIGNAL.sendSignal(collisionInfo.position, (flipped + agneDiff*2)%(Math.PI*2), 0, 1, false, `${coll.visualData}\nAt X=${coll.position.x} Y=${coll.position.y}\nSignal Strength=${Math.round(this.strength*10000)/100}%`, this.frequency, coll.id);
+				SIGNAL.sendSignal(collisionInfo.position, (flipped + agneDiff*2)%(Math.PI*2), 0, 1, false, `${coll.visualData}\nAt X=${coll.position.x} Y=${coll.position.y}`, this.frequency, coll.id);
 			}
             //coll.log[`${this.origin}`]=SIGNAL.debugNoise(this.payload,this.strength);
             if(!this.isProbe)this.debugLogging(coll);
@@ -164,7 +167,7 @@ let SuperEarth = new PLANET({x:400,y:400,r:15},false,'I am Super Earth');
 for(i = 0; i < 30; i++){
 	new PLANET({x:Math.random()*800,y:Math.random()*800,r:Math.random()*10+5},false,`I am planet #${i+1}`);
 }
-SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",1100, SuperEarth.id);
+//SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",2000, SuperEarth.id);
 
 
 function intersect(planet, signal, dataTarget){
@@ -250,6 +253,36 @@ document.onkeydown=(e)=>{
         case "arrowright":
                 canvasOffset.x -= gravityCutoff;
             return;
+        case "1":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",1000,SuperEarth.id);
+            return;
+        case "2":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",2000,SuperEarth.id);
+            return;
+        case "3":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",3000,SuperEarth.id);
+            return;
+        case "4":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",4000,SuperEarth.id);
+            return;
+        case "5":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",5000,SuperEarth.id);
+            return;
+        case "6":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",6000,SuperEarth.id);
+            return;
+        case "7":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",7000,SuperEarth.id);
+            return;
+        case "8":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",8000,SuperEarth.id);
+            return;
+        case "9":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",9000,SuperEarth.id);
+            return;
+        case "0":
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",9999,SuperEarth.id);
+            return;
     }
     let inter = 0;
     let update = setInterval(()=>{
@@ -260,6 +293,9 @@ document.onkeydown=(e)=>{
         mainGrid.debugDraw();
         ctx.resetTransform();
         inter++;
-        if (inter>=50) clearInterval(update);
+        if (inter>=50) {
+            //SIGNAL.signals.forEach((x) => x.debugDrawPath());
+            clearInterval(update);
+        }
     },10);
 }
