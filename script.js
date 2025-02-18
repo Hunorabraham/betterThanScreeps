@@ -5,30 +5,59 @@ const unit = 1;
 //convenience class
 //works with anything that has {x,y}
 class vec2{
-    static add(v,w){
-        return {x: v.x+w.x, y: v.y+w.y};
-    }
-    static sub(v,w){
-        return {x: v.x-w.x, y: v.y-w.y};
-    }
-    static scaleWith(v,c){
-        return {x: v.x*c, y: v.y*c};
-    }
-    static dot(v,w){
-        return v.x*w.x + v.y*w.y;
-    }
-    static mag(v){
-        return Math.sqrt(v.x**2 + v.y**2);
-    }
+    static add(v,w){return {x: v.x+w.x, y: v.y+w.y};}
+    static sub(v,w){return {x: v.x-w.x, y: v.y-w.y};}
+    static scaleWith(v,c){return {x: v.x*c, y: v.y*c};}
+    static dot(v,w){return v.x*w.x + v.y*w.y;}
+    static mag(v){return Math.sqrt(v.x**2 + v.y**2);}
     static normalise(v){
         let mag = vec2.mag(v);
         return vec2.scaleWith(v,1/mag);
     }
-    static direction(v){
-        return Math.atan2(v.y,v.x);
+    static direction(v){return Math.atan2(v.y,v.x);}
+    static unitFromDir(dir){return {x: Math.cos(dir), y: Math.sin(dir)};}
+    static Zero(){return {x:0,y:0};}
+}
+class GRID{
+    constructor(cellsX, cellsY, width, height){
+        this.cellsX = cellsX;
+        this.cellsY = cellsY;
+        this.width = width;
+        this.height = height;
+        this.cellH = height/cellsY;
+        this.cellW = width/cellsX;
+        this.resetHashMap();
     }
-    static unitFromDir(dir){
-        return {x: Math.cos(dir), y: Math.sin(dir)};
+    debugDraw(){
+        ctx.beginPath();
+        //vertical lines
+        for(let i = 1; i < this.cellsX; i++){
+            ctx.moveTo(this.cellW*i,0);
+            ctx.lineTo(this.cellW*i,this.height);
+        }
+        //horizontal lines
+        for(let i = 1; i < this.cellsY; i++){
+            ctx.moveTo(0, this.cellH*i);
+            ctx.lineTo(this.width, this.cellH*i);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        Object.keys(this.hashMap).forEach(k=>{ctx.fillText(`${k}: ${this.hashMap[k].length}`,parseInt(k.split(';')[0])*this.cellW, parseInt(k.split(';')[1])*this.cellH + 10)});
+    }
+    populateHashMap(members){
+        this.resetHashMap();
+        members.forEach(m=>{this.hashMap[`${Math.floor(m.position.x/this.cellW)};${Math.floor(m.position.y/this.cellH)}`].push(m);});
+    }
+    /**
+     * resets or initialises hashMap
+     */
+    resetHashMap(){
+        this.hashMap = {};
+        for(let i = 0; i < this.cellsX; i++){
+            for(let j = 0; j < this.cellsY; j++){
+                this.hashMap[`${i};${j}`] = [];
+            }
+        }
     }
 }
 class PLANET{
@@ -36,6 +65,7 @@ class PLANET{
         this.position = Pos;
         this.storage = Store;
 		this.visualData  = visual;
+        this.velocity = vec2.Zero();
         PLANET.planets.push(this);
     }
     static planets = [];
@@ -44,6 +74,9 @@ class PLANET{
         ctx.arc(this.position.x,this.position.y,this.position.r,0,Math.PI*2,false);
         ctx.closePath();
         ctx.stroke();
+    }
+    gravUpdate(){
+
     }
 }
 class SIGNAL{
@@ -181,15 +214,16 @@ window.onmousemove = (e)=>{
     mouseY = e.clientY;
 }
 
+let a = new GRID(10,10,canvas.width,canvas.height);
+a.populateHashMap(PLANET.planets);
+
 document.onkeydown=(e)=>{
     let inter = 0;
     let update = setInterval(()=>{
         SIGNAL.debugUpdate();
         PLANET.planets.forEach(planet=>planet.debugDraw());
+        a.debugDraw();
         inter++;
         if (inter>=50) clearInterval(update);
     },10);
-    
 }
-
-
