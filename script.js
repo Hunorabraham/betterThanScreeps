@@ -1,7 +1,7 @@
 const canvas = document.getElementById('can');
 const ctx = canvas.getContext('2d');
 const unit = 1;
-const gravityCutoff = 100;
+const gravityCutoff = 200;
 const maxFreq = 10000;
 const deltaTime = 10;
 const planck = deltaTime/1000;
@@ -189,7 +189,7 @@ class SIGNAL{
 		this.position = {x:this.position.x+unit*Math.cos(this.direction), y:this.position.y+unit*Math.sin(this.direction)};
     }
 }
-let SuperEarth = new PLANET({x:400,y:400,r:15},false,'I am Super Earth');
+let SuperEarth = new PLANET({x:500,y:500,r:25},false,'I am Super Earth');
 for(i = 0; i < 30; i++){
 	new PLANET({x:Math.random()*800,y:Math.random()*800,r:Math.random()*10+5},false,`I am planet #${i+1}`);
 }
@@ -280,34 +280,34 @@ document.onkeydown=(e)=>{
                 canvasOffset.x -= gravityCutoff;
             return;
         case "1":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",1000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",1000,SuperEarth.id);
             return;
         case "2":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",2000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",2000,SuperEarth.id);
             return;
         case "3":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",3000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",3000,SuperEarth.id);
             return;
         case "4":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",4000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",4000,SuperEarth.id);
             return;
         case "5":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",5000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",5000,SuperEarth.id);
             return;
         case "6":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",6000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",6000,SuperEarth.id);
             return;
         case "7":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",7000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",7000,SuperEarth.id);
             return;
         case "8":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",8000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",8000,SuperEarth.id);
             return;
         case "9":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",9000,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",9000,SuperEarth.id);
             return;
         case "0":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",9999,SuperEarth.id);
+            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",9999,SuperEarth.id);
             return;
     }
     //if(e.key.toLocaleLowerCase() != " ") return;
