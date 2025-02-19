@@ -3,6 +3,9 @@ const ctx = canvas.getContext('2d');
 const unit = 1;
 const gravityCutoff = 100;
 const maxFreq = 10000;
+const deltaTime = 10;
+const planck = deltaTime/1000;
+const G = 10000;
 
 //convenience class
 //works with anything that has {x,y}
@@ -48,7 +51,12 @@ class GRID{
     }
     populateHashMap(members){
         this.resetHashMap();
-        members.forEach(m=>{this.hashMap[`${Math.floor(m.position.x/this.cellW)};${Math.floor(m.position.y/this.cellH)}`].push(m);});
+        members.forEach(m=>{
+            let x = Math.floor(m.position.x/this.cellW);
+            let y = Math.floor(m.position.y/this.cellH);
+            if(x<0||y<0||x>=this.cellsX||y>=this.cellsY) return;
+            this.hashMap[`${x};${y}`].push(m);
+        });
     }
     /**
      * resets or initialises hashMap
@@ -60,6 +68,12 @@ class GRID{
                 this.hashMap[`${i};${j}`] = [];
             }
         }
+    }
+    getHash(member){
+        let x = Math.floor(member.position.x/this.cellW);
+        let y = Math.floor(member.position.y/this.cellH);
+        if(x<0||y<0||x>=this.cellsX||y>=this.cellsY) return null;
+        return `${x};${y}`;
     }
 }
 class PLANET{
@@ -73,14 +87,27 @@ class PLANET{
         PLANET.planets.push(this);
     }
     static planets = [];
+    static Update(grid){
+        PLANET.planets.forEach(planet=>{
+            let hash = grid.getHash(planet);
+            if(hash == null) return;
+            let grav = grid.hashMap[hash].reduce((g,p)=>{
+                if(p===planet) return g;
+                let distVec = vec2.sub(p.position, planet.position);
+                if(vec2.mag(distVec) > gravityCutoff) return g;
+                return vec2.add(g, vec2.scaleWith(vec2.normalise(distVec),G/(vec2.mag(distVec)**2)));
+            }, vec2.Zero());
+            planet.velocity = vec2.add(planet.velocity, vec2.scaleWith(grav, planck));
+            let deltapos = vec2.scaleWith(planet.velocity, planck);
+            planet.position.x += deltapos.x;
+            planet.position.y += deltapos.y;
+        });
+    }
     debugDraw(){
         ctx.beginPath();
         ctx.arc(this.position.x,this.position.y,this.position.r,0,Math.PI*2,false);
         ctx.closePath();
         ctx.stroke();
-    }
-    gravUpdate(){
-
     }
 }
 class SIGNAL{
@@ -101,7 +128,6 @@ class SIGNAL{
 	static debugStep(){
 		SIGNAL.signals.forEach(signal=>{
             signal.update();
-            signal.debugDrawPath();
         });
 	}
     static debugUpdate(){
@@ -284,18 +310,31 @@ document.onkeydown=(e)=>{
             SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",9999,SuperEarth.id);
             return;
     }
+    //if(e.key.toLocaleLowerCase() != " ") return;
     let inter = 0;
     let update = setInterval(()=>{
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-        ctx.translate(canvasOffset.x,canvasOffset.y);
-        SIGNAL.debugUpdate();
-        PLANET.planets.forEach(planet=>planet.debugDraw());
-        mainGrid.debugDraw();
-        ctx.resetTransform();
-        inter++;
         if (inter>=50) {
             //SIGNAL.signals.forEach((x) => x.debugDrawPath());
             clearInterval(update);
+            console.log("done");
+            return;
         }
-    },10);
+        inter++;
+        SIGNAL.debugStep();
+        PLANET.Update(mainGrid);
+        mainGrid.populateHashMap(PLANET.planets);
+    },deltaTime);
+}
+
+setInterval(() => {
+    renderUpdate();
+}, deltaTime);
+
+function renderUpdate(){
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    ctx.translate(canvasOffset.x,canvasOffset.y);
+    PLANET.planets.forEach(planet=>planet.debugDraw());
+    SIGNAL.signals.forEach(signal=>signal.debugDrawPath());
+    mainGrid.debugDraw();
+    ctx.resetTransform();
 }
