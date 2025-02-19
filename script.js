@@ -310,7 +310,7 @@ document.onkeydown=(e)=>{
             SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,1000,true,"",9999,SuperEarth.id);
             return;
     }
-    if(e.key.toLocaleLowerCase() != " ") return;
+    //if(e.key.toLocaleLowerCase() != " ") return;
     let inter = 0;
     let update = setInterval(()=>{
         if (inter>=50) {
