@@ -140,7 +140,7 @@ class SIGNAL{
         if(coll === undefined || coll.id==this.origin || this.frequency/maxFreq>=Math.random()){
             //no collision
 			ctx.strokeStyle = "black";
-            this.strength-=Math.random()*(1-this.frequency/maxFreq)/50;
+            this.strength-=(Math.random()*2)*(1.1-(this.frequency/maxFreq)**0.2)/110;
             
             if(this.strength<=0){
                 SIGNAL.signals[SIGNAL.signals.indexOf(this)] = SIGNAL.signals[SIGNAL.signals.length-1];
