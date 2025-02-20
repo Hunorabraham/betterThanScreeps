@@ -5,7 +5,7 @@ const gravityCutoff = 200;
 const maxFreq = 10000;
 const deltaTime = 10;
 const planck = deltaTime/1000;
-const G = 10000;
+const G = 1000;
 
 //convenience class
 //works with anything that has {x,y}
@@ -95,7 +95,7 @@ class PLANET{
                 if(p===planet) return g;
                 let distVec = vec2.sub(p.position, planet.position);
                 if(vec2.mag(distVec) > gravityCutoff) return g;
-                return vec2.add(g, vec2.scaleWith(vec2.normalise(distVec),G/(vec2.mag(distVec)**2)));
+                return vec2.add(g, vec2.scaleWith(vec2.normalise(distVec), G*(p.position.r/planet.position.r/vec2.mag(distVec))**2));
             }, vec2.Zero());
             planet.velocity = vec2.add(planet.velocity, vec2.scaleWith(grav, planck));
             let deltapos = vec2.scaleWith(planet.velocity, planck);
