@@ -5,7 +5,7 @@ const gravityCutoff = 200;
 const maxFreq = 10000;
 const deltaTime = 10;
 const planck = deltaTime/1000;
-const G = 1000;
+const G = 1;
 
 //convenience class
 //works with anything that has {x,y}
@@ -83,7 +83,7 @@ class PLANET{
         this.storage = Store;
         this.log = {};
 		this.visualData = visual;
-        this.velocity = vec2.Zero();
+        this.velocity = vec2.add(vec2.Zero(),{x:2*(Math.random()-0.5),y:2*(Math.random()-0.5)});
         PLANET.planets.push(this);
     }
     static checkCollision(){
@@ -102,7 +102,7 @@ class PLANET{
         let pos = {};
         pos.x = (a.position.x+b.position.x)/2;
         pos.y = (a.position.y+b.position.y)/2;
-        pos.r = a.position.r+b.position.r;
+        pos.r = Math.sqrt(a.position.r**2+b.position.r**2);
         let p = new PLANET(pos, a.storage + b.storage, a.visual+b.visual);
         p.velocity = vec2.add(a.velocity, b.velocity);
     }
@@ -210,9 +210,9 @@ class SIGNAL{
 		this.position = {x:this.position.x+unit*Math.cos(this.direction), y:this.position.y+unit*Math.sin(this.direction)};
     }
 }
-let SuperEarth = new PLANET({x:500,y:500,r:25},false,'I am Super Earth');
-for(i = 0; i < 30; i++){
-	new PLANET({x:Math.random()*800,y:Math.random()*800,r:Math.random()*10+5},false,`I am planet #${i+1}`);
+//let SuperEarth = new PLANET({x:500,y:500,r:25},false,'I am Super Earth');
+for(i = 0; i < 3000; i++){
+	new PLANET({x:Math.random()*1000,y:Math.random()*1000,r:Math.random()},false,`I am planet #${i+1}`);
 }
 //SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",2000, SuperEarth.id);
 
@@ -337,7 +337,7 @@ document.onkeydown=(e)=>{
         if (inter>=50) {
             //SIGNAL.signals.forEach((x) => x.debugDrawPath());
             clearInterval(update);
-            console.log("done");
+            //console.log("done");
             return;
         }
         inter++;
