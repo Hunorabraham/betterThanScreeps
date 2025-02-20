@@ -86,6 +86,26 @@ class PLANET{
         this.velocity = vec2.Zero();
         PLANET.planets.push(this);
     }
+    static checkCollision(){
+        outer: for(let i = 0; i < PLANET.planets.length; i++){
+            for(let j = i+1; j < PLANET.planets.length; j++){
+                if(vec2.mag(vec2.sub(PLANET.planets[i].position, PLANET.planets[j].position)) < PLANET.planets[i].position.r + PLANET.planets[j].position.r){
+                    PLANET.merge(PLANET.planets[i], PLANET.planets[j]);
+                    continue outer;
+                }
+            }
+        }
+    }
+    static merge(a,b){
+        PLANET.planets.splice(PLANET.planets.indexOf(a),1);
+        PLANET.planets.splice(PLANET.planets.indexOf(b),1);
+        let pos = {};
+        pos.x = (a.position.x+b.position.x)/2;
+        pos.y = (a.position.y+b.position.y)/2;
+        pos.r = a.position.r+b.position.r;
+        let p = new PLANET(pos, a.storage + b.storage, a.visual+b.visual);
+        p.velocity = vec2.add(a.velocity, b.velocity);
+    }
     static planets = [];
     static Update(grid){
         PLANET.planets.forEach(planet=>{
@@ -102,6 +122,7 @@ class PLANET{
             planet.position.x += deltapos.x;
             planet.position.y += deltapos.y;
         });
+        PLANET.checkCollision();
     }
     debugDraw(){
         ctx.beginPath();
