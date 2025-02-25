@@ -89,7 +89,7 @@ class PLANET{
     static checkCollision(){
         outer: for(let i = 0; i < PLANET.planets.length; i++){
             for(let j = i+1; j < PLANET.planets.length; j++){
-                if(vec2.mag(vec2.sub(PLANET.planets[i].position, PLANET.planets[j].position)) < PLANET.planets[i].position.r + PLANET.planets[j].position.r){
+                if(vec2.mag(vec2.sub(PLANET.planets[i].position, PLANET.planets[j].position)) < (PLANET.planets[i].position.r + PLANET.planets[j].position.r)*3/4){
                     PLANET.merge(PLANET.planets[i], PLANET.planets[j]);
                     continue outer;
                 }
@@ -231,8 +231,8 @@ Predef=[
         new PLANET({x:x*200+125,y:y*200+100,r:10},false,`I am a planet`,{x:0,y:1});
     }
 ];
-new PLANET({x:2*200+100,y:2*200+75,r:10},false,`I am a planet`).velocity={x:10,y:0};
-new PLANET({x:2*200+100,y:2*200+125,r:10},false,`I am a planet`).velocity={x:-10,y:0};
+new PLANET({x:2*200+100,y:2*200+75,r:10},false,`I am a planet`).velocity={x:12,y:0};
+new PLANET({x:2*200+100,y:2*200+125,r:10},false,`I am a planet`).velocity={x:-12,y:0};
 
 
 function intersect(planet, signal, dataTarget){
@@ -319,34 +319,34 @@ document.onkeydown=(e)=>{
                 canvasOffset.x -= gravityCutoff;
             return;
         case "1":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",1000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",1000,-1);
             return;
         case "2":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",2000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",2000,-1);
             return;
         case "3":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",3000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",3000,-1);
             return;
         case "4":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",4000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",4000,-1);
             return;
         case "5":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",5000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",5000,-1);
             return;
         case "6":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",6000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",6000,-1);
             return;
         case "7":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",7000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",7000,-1);
             return;
         case "8":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",8000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",8000,-1);
             return;
         case "9":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",9000,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",9000,-1);
             return;
         case "0":
-            SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",9999,SuperEarth.id);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",9999,-1);
             return;
     }
     //if(e.key.toLocaleLowerCase() != " ") return;
