@@ -5,7 +5,7 @@ const gravityCutoff = 200;
 const maxFreq = 10000;
 const deltaTime = 10;
 const planck = deltaTime/1000;
-const G = 1;
+const G = 100;
 
 //convenience class
 //works with anything that has {x,y}
@@ -83,7 +83,7 @@ class PLANET{
         this.storage = Store;
         this.log = {};
 		this.visualData = visual;
-        this.velocity = vec2.add(vec2.Zero(),{x:2*(Math.random()-0.5),y:2*(Math.random()-0.5)});
+        this.velocity = vec2.Zero();
         PLANET.planets.push(this);
     }
     static checkCollision(){
@@ -115,7 +115,7 @@ class PLANET{
                 if(p===planet) return g;
                 let distVec = vec2.sub(p.position, planet.position);
                 if(vec2.mag(distVec) > gravityCutoff) return g;
-                return vec2.add(g, vec2.scaleWith(vec2.normalise(distVec), G*(p.position.r/planet.position.r/vec2.mag(distVec))**2));
+                return vec2.add(g, vec2.scaleWith(vec2.normalise(distVec), G*((p.position.r*planet.position.r)/(vec2.mag(distVec)**2))));
             }, vec2.Zero());
             planet.velocity = vec2.add(planet.velocity, vec2.scaleWith(grav, planck));
             let deltapos = vec2.scaleWith(planet.velocity, planck);
@@ -211,10 +211,28 @@ class SIGNAL{
     }
 }
 //let SuperEarth = new PLANET({x:500,y:500,r:25},false,'I am Super Earth');
-for(i = 0; i < 3000; i++){
-	new PLANET({x:Math.random()*1000,y:Math.random()*1000,r:Math.random()},false,`I am planet #${i+1}`);
-}
+/*
+for(i = 0; i < 50; i++){
+	new PLANET({x:Math.random()*1000,y:Math.random()*1000,r:Math.random()*5+10},false,`I am planet #${i+1}`);
+}*/
 //SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",2000, SuperEarth.id);
+Predef=[
+    (x,y,r1,r2)=>{
+        new PLANET({x:x*200+100,y:y*200+100,r:25},false,`I am a planet`,{x:0,y:0});
+        new PLANET({x:x*200+100,y:y*200+35,r:10},false,`I am a planet`,{x:-3.1,y:0});
+        new PLANET({x:x*200+100,y:y*200+165,r:10},false,`I am a planet`,{x:3.1,y:0});
+    },
+    (x,y,r1,r2)=>{
+        new PLANET({x:x*200+100,y:y*200+75,r:10},false,`I am a planet`,{x:-1,y:0});
+        new PLANET({x:x*200+100,y:y*200+125,r:10},false,`I am a planet`,{x:1,y:0});
+    },
+    (x,y,r1,r2)=>{
+        new PLANET({x:x*200+75,y:y*200+100,r:10},false,`I am a planet`,{x:0,y:-1});
+        new PLANET({x:x*200+125,y:y*200+100,r:10},false,`I am a planet`,{x:0,y:1});
+    }
+];
+new PLANET({x:2*200+100,y:2*200+75,r:10},false,`I am a planet`).velocity={x:10,y:0};
+new PLANET({x:2*200+100,y:2*200+125,r:10},false,`I am a planet`).velocity={x:-10,y:0};
 
 
 function intersect(planet, signal, dataTarget){
@@ -350,7 +368,7 @@ document.onkeydown=(e)=>{
 setInterval(() => {
     renderUpdate();
 }, deltaTime);
-
+//for(let x=0;x<mainGrid.cellsX;x++)for(let y=0;y<mainGrid.cellsY;y++)if(Math.random()>0.75)Predef[Math.floor(Math.random()*Predef.length)](x,y);
 function renderUpdate(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
     ctx.translate(canvasOffset.x,canvasOffset.y);
