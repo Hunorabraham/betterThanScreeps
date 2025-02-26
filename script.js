@@ -1,7 +1,7 @@
 const canvas = document.getElementById('can');
 const ctx = canvas.getContext('2d');
 const unit = 1;
-const gravityCutoff = 200;
+const gravityCutoff = 400;
 const maxFreq = 10000;
 const deltaTime = 10;
 const planck = deltaTime/1000;
@@ -104,7 +104,7 @@ class PLANET{
         pos.y = (a.position.y+b.position.y)/2;
         pos.r = Math.sqrt(a.position.r**2+b.position.r**2);
         let p = new PLANET(pos, a.storage + b.storage, a.visual+b.visual);
-        p.velocity = vec2.add(a.velocity, b.velocity);
+        p.velocity = vec2.add(vec2.scaleWith(a.velocity,1/b.position.r), vec2.scaleWith(b.velocity,1/a.position.r));
     }
     static planets = [];
     static Update(grid){
@@ -115,12 +115,12 @@ class PLANET{
                 if(p===planet) return g;
                 let distVec = vec2.sub(p.position, planet.position);
                 if(vec2.mag(distVec) > gravityCutoff) return g;
-                return vec2.add(g, vec2.scaleWith(vec2.normalise(distVec), G*((p.position.r*planet.position.r)/(vec2.mag(distVec)**2))));
+                return vec2.add(g, vec2.scaleWith(vec2.normalise(distVec), G*p.position.r/vec2.mag(distVec)**2 ));
             }, vec2.Zero());
             planet.velocity = vec2.add(planet.velocity, vec2.scaleWith(grav, planck));
             let deltapos = vec2.scaleWith(planet.velocity, planck);
-            planet.position.x += deltapos.x;
-            planet.position.y += deltapos.y;
+            planet.position.x = Math.round((planet.position.x+deltapos.x)*10000)/10000;
+            planet.position.y = Math.round((planet.position.y+deltapos.y)*10000)/10000;
         });
         PLANET.checkCollision();
     }
@@ -218,21 +218,23 @@ for(i = 0; i < 50; i++){
 //SIGNAL.sendSignal(SuperEarth.position,0,Math.PI,10000,true,"",2000, SuperEarth.id);
 Predef=[
     (x,y,r1,r2)=>{
-        new PLANET({x:x*200+100,y:y*200+100,r:25},false,`I am a planet`,{x:0,y:0});
-        new PLANET({x:x*200+100,y:y*200+35,r:10},false,`I am a planet`,{x:-3.1,y:0});
-        new PLANET({x:x*200+100,y:y*200+165,r:10},false,`I am a planet`,{x:3.1,y:0});
+        new PLANET({x:x*gravityCutoff+gravityCutoff/2,y:y*gravityCutoff+gravityCutoff/2,r:25},false,`I am a planet`).velocity={x:0,y:0};
+        new PLANET({x:x*gravityCutoff+gravityCutoff/2,y:y*gravityCutoff+gravityCutoff/2-65,r:10},false,`I am a planet`).velocity={x:-6.5,y:0};
+        new PLANET({x:x*gravityCutoff+gravityCutoff/2,y:y*gravityCutoff+gravityCutoff/2+65,r:10},false,`I am a planet`).velocity={x:6.5,y:0};
     },
-    (x,y,r1,r2)=>{
-        new PLANET({x:x*200+100,y:y*200+75,r:10},false,`I am a planet`,{x:-1,y:0});
-        new PLANET({x:x*200+100,y:y*200+125,r:10},false,`I am a planet`,{x:1,y:0});
+    (x,y)=>{
+        let r1 = Math.random()*3+0.5;
+        let r2 = Math.random()+0.5;
+        new PLANET({x:x*gravityCutoff+gravityCutoff/2-25*r1,y:y*gravityCutoff+gravityCutoff/2,r:10*r2},false,`I am a planet`).velocity={x:0,y:-3.16*(r2/r1)};
+        new PLANET({x:x*gravityCutoff+gravityCutoff/2+25*r1,y:y*gravityCutoff+gravityCutoff/2,r:10*r2},false,`I am a planet`).velocity={x:0,y:3.16*(r2/r1)};
     },
-    (x,y,r1,r2)=>{
-        new PLANET({x:x*200+75,y:y*200+100,r:10},false,`I am a planet`,{x:0,y:-1});
-        new PLANET({x:x*200+125,y:y*200+100,r:10},false,`I am a planet`,{x:0,y:1});
+    (x,y)=>{
+        let r1 = Math.random()*3+0.5;
+        let r2 = Math.random()+0.5;
+        new PLANET({x:x*gravityCutoff+gravityCutoff/2,y:y*gravityCutoff+gravityCutoff/2-25*r1,r:10*r2},false,`I am a planet`).velocity={x:-3.16*(r2/r1),y:0};
+        new PLANET({x:x*gravityCutoff+gravityCutoff/2,y:y*gravityCutoff+gravityCutoff/2+25*r1,r:10*r2},false,`I am a planet`).velocity={x:3.16*(r2/r1),y:0};
     }
 ];
-new PLANET({x:2*200+100,y:2*200+75,r:10},false,`I am a planet`).velocity={x:12,y:0};
-new PLANET({x:2*200+100,y:2*200+125,r:10},false,`I am a planet`).velocity={x:-12,y:0};
 
 
 function intersect(planet, signal, dataTarget){
@@ -319,34 +321,34 @@ document.onkeydown=(e)=>{
                 canvasOffset.x -= gravityCutoff;
             return;
         case "1":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",1000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",1000,-1);
             return;
         case "2":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",2000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",2000,-1);
             return;
         case "3":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",3000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",3000,-1);
             return;
         case "4":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",4000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",4000,-1);
             return;
         case "5":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",5000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",5000,-1);
             return;
         case "6":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",6000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",6000,-1);
             return;
         case "7":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",7000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",7000,-1);
             return;
         case "8":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",8000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",8000,-1);
             return;
         case "9":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",9000,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",9000,-1);
             return;
         case "0":
-            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,10000,true,"",9999,-1);
+            SIGNAL.sendSignal({x:mouseX,y:mouseY},0,Math.PI,2000,true,"",9999,-1);
             return;
     }
     //if(e.key.toLocaleLowerCase() != " ") return;
@@ -368,7 +370,7 @@ document.onkeydown=(e)=>{
 setInterval(() => {
     renderUpdate();
 }, deltaTime);
-//for(let x=0;x<mainGrid.cellsX;x++)for(let y=0;y<mainGrid.cellsY;y++)if(Math.random()>0.75)Predef[Math.floor(Math.random()*Predef.length)](x,y);
+for(let x=0;x<mainGrid.cellsX;x++)for(let y=0;y<mainGrid.cellsY;y++)if(Math.random()>0.75)Predef[Math.floor(Math.random()*Predef.length)](x,y);
 function renderUpdate(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
     ctx.translate(canvasOffset.x,canvasOffset.y);
